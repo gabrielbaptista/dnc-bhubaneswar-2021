@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http.Formatting;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Microsoft.WindowsAzure.Storage;
+using System.Text;
 
 namespace FunctionAppWWTravel
 {
@@ -24,7 +25,7 @@ namespace FunctionAppWWTravel
         {
             var requestData = await req.Content.ReadAsStringAsync();
 
-            var connectionString = Environment.GetEnvironmentVariable("AzureQueueStorage");
+            var connectionString = Environment.GetEnvironmentVariable("EmailQueueConnectionString");
 
             var storageAccount = CloudStorageAccount.Parse(connectionString);
 
@@ -37,7 +38,10 @@ namespace FunctionAppWWTravel
             await messageQueue.AddMessageAsync(message);
 
             log.LogInformation("HTTP trigger from SendEmail function processed a request.");
-            return req.CreateResponse(HttpStatusCode.OK, new { success = true }, JsonMediaTypeFormatter.DefaultMediaType);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(new { success = true }), Encoding.UTF8, "application/json"),
+            };
         }
     }
     
